@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Secure Upload{% endblock %}</h1>
+    <link href="{{ url_for('static', filename='dropzone.css') }}" type="text/css" rel="stylesheet" />
+    <script src="{{ url_for('static', filename='dropzone.js') }}"></script>
+    <script src="{{ url_for('static', filename='openpgp.min.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <script>
+        function encryptFile(file, done) {
+            fileReader = new FileReader();
+            fileReader.onload = () => {
+                options = {
+                    message: openpgp.message.fromBinary(new Uint8Array(fileReader.result)),
+                    passwords: ['test'],
+                    armor: false
+                };
+                openpgp.encrypt(options).then(function(ciphertext) {
+                    done(new Blob([ciphertext.data], {type: 'Binary'}));
+                });
+
+            };
+            fileReader.readAsArrayBuffer(file);
+
+        }
+
+        Dropzone.options.myDropzone = {
+            init: function() {
+                var myDropzone = this;
+                this.element.querySelector("button[type=submit]").addEventListener("click", function(e) {
+                  // Make sure that the form isn't actually being sent.
+                  e.preventDefault();
+                  e.stopPropagation();
+                  myDropzone.processQueue();
+                });
+
+            },
+            transformFile: encryptFile,
+            createImageThumbnails: false,
+            autoProcessQueue: false,
+            addRemoveLinks: true,
+            maxFilesize: null
+        };
+        function onSubmit() {
+            Dropzone.instances[0].processQueue();
+        }
+    </script>
+  <form action="/" class="dropzone" id="my-dropzone">
+      <div class="dropzone-previews"></div>
+      <button type="submit">Upload</button>
+  </form>
+{% endblock %}
