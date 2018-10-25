@@ -2,15 +2,18 @@
 
 {% block header %}
     <h1>{% block title %}Secure Upload{% endblock %}</h1>
-    <link href="{{ url_for('static', filename='dropzone.css') }}" type="text/css" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='dropzone.css') }}" type="text/css" rel="stylesheet"/>
     <script src="{{ url_for('static', filename='dropzone.js') }}"></script>
     <script src="{{ url_for('static', filename='openpgp.min.js') }}"></script>
     <script src="{{ url_for('static', filename='secureupload.js') }}"></script>
 {% endblock %}
 
 {% block content %}
-  <form action="/" class="dropzone" id="my-dropzone">
-      <div class="dropzone-previews"></div>
-      <button type="submit">Upload</button>
-  </form>
+    {% for pubkey in config.PUBKEYS %}
+        <div class="pubkey" hidden>{{ pubkey }}</div>
+    {% endfor %}
+    <form action="/" class="dropzone" id="my-dropzone">
+        <div class="dropzone-previews"></div>
+        <button type="submit">Upload</button>
+    </form>
 {% endblock %}
